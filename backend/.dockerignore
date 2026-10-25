@@ -1,0 +1,16 @@
+# Source-of-truth folders: the image must run from the synced copies inside services/
+/entities
+/shared
+
+.env
+.env.*
+!.env.example
+.git
+node_modules
+test
+docs
+results
+requests
+AGENTS.md
+coverage
+*.log

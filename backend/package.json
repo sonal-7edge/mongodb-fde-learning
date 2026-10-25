@@ -1,0 +1,33 @@
+{
+  "name": "movie-store",
+  "version": "1.0.0",
+  "description": "Movie Store Management: a MongoDB teaching app (ACL, indexes, modelling, transactions)",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "make dev",
+    "build": "make build",
+    "test": "make test",
+    "deploy": "make deploy",
+    "sync": "make sync",
+    "token": "node scripts/token.js",
+    "check:setup": "node scripts/check-setup.js",
+    "verify:tests": "node scripts/verify-tests.js"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "joi": "^18.3.0",
+    "jose": "^6.2.13",
+    "mongoose": "^9.11.4",
+    "mongoose-paginate-v2": "^1.9.5"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.3.1",
+    "vitest": "^5.0.5"
+  }
+}

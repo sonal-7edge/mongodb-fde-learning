@@ -147,3 +147,11 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# --- movie-store ---
+# Generated copies of the root entities/ and shared/ (run "make sync")
+services/*/entities/
+services/*/shared/
+# Benchmark output (keep the README)
+results/*
+!results/README.md

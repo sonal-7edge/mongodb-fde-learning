@@ -1,0 +1,6 @@
+{
+  "watch": ["server.js", "app.js", "services/", "entities/", "shared/"],
+  "ignore": ["services/*/entities/**", "services/*/shared/**"],
+  "ext": "js,json",
+  "exec": "make sync && node server.js"
+}

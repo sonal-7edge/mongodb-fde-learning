@@ -1,0 +1,15 @@
+{
+  "name": "movie-store-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Tiny UI to call the Movie Store API and see response times and query plans",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^8.3.5"
+  }
+}
