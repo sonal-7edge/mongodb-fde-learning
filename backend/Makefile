@@ -4,7 +4,7 @@ PROJECT   := $(shell node -p "require('./package.json').name")
 VERSION   := $(shell node -p "require('./package.json').version")
 IMAGE     := $(PROJECT):$(VERSION)
 CONTAINER := $(PROJECT)
-PORT      ?= 3000
+PORT      ?= 3004
 SERVICES  := $(notdir $(wildcard services/*))
 SYNCED    := entities shared
 
@@ -57,9 +57,9 @@ docker-build: build ## Build the Docker image $(IMAGE)
 	docker build -t $(IMAGE) -t $(PROJECT):latest --label org.opencontainers.image.version=$(VERSION) .
 
 deploy: docker-build ## Run the image locally as container $(CONTAINER) and wait for /health
-	@test -f .env || { echo "❌ .env not found. Copy .env.example to .env first."; exit 1; }
+	@test -f .env || { echo "❌ .env not found. Create it as shown in docs/setup.md step 3."; exit 1; }
 	@docker rm -f $(CONTAINER) > /dev/null 2>&1 || true
-	docker run -d --name $(CONTAINER) --env-file .env -p $(PORT):3000 --restart unless-stopped $(IMAGE)
+	docker run -d --name $(CONTAINER) --env-file .env -e PORT=3000 -p $(PORT):3000 --restart unless-stopped $(IMAGE)
 	@for i in $$(seq 1 30); do \
 	  if curl -fsS http://localhost:$(PORT)/health > /dev/null 2>&1; then \
 	    echo "Deployed $(IMAGE) as container $(CONTAINER) on http://localhost:$(PORT)"; exit 0; \

@@ -18,7 +18,7 @@ npm run dev        # http://localhost:5173
 ```
 
 Working on a remote machine? Forward **only port 5173**. Vite forwards `/api`, `/auth` and
-`/health` to the API, so the browser never needs port 3000 and no CORS setup is needed.
+`/health` to the API, so the browser never needs port 3004 and no CORS setup is needed.
 
 ```bash
 ssh -L 5173:localhost:5173 you@remote-host      # or the "Ports" tab in VS Code
@@ -26,7 +26,7 @@ ssh -L 5173:localhost:5173 you@remote-host      # or the "Ports" tab in VS Code
 
 | Variable | Default | Use |
 |---|---|---|
-| `BACKEND_URL` | `http://localhost:3000` | Where the API runs |
+| `BACKEND_URL` | `http://localhost:3004` | Where the API runs |
 | `UI_ALLOWED_HOSTS` | (none) | Comma-separated hostnames, if you open the UI through a forwarding hostname such as `*.devtunnels.ms` |
 
 ## Use

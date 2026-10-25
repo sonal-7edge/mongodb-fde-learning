@@ -98,10 +98,20 @@ function selectEndpoint(endpoint, button) {
   document.querySelectorAll("button.endpoint").forEach((b) => b.classList.toggle("active", b === button));
   form.method.value = endpoint.method;
   form.path.value = fillId(endpoint.path);
-  form.body.value = endpoint.body ? JSON.stringify(endpoint.body, null, 2) : "";
+  form.body.value = endpoint.body ? fillBodyIds(JSON.stringify(endpoint.body, null, 2)) : "";
+  fitBodyToContent();
+  // Only endpoints that run a MongoDB query can return a plan; hide the option elsewhere
   form.explain.checked = false;
   form.explain.disabled = !endpoint.explain;
+  document.getElementById("explain-option").hidden = !endpoint.explain;
+  document.getElementById("explain-hint").hidden = Boolean(endpoint.explain);
   form.note.textContent = endpoint.note ?? "";
+}
+
+/** Grow the JSON editor so the whole body is visible (CSS keeps it between 260px and 70% of the screen). */
+function fitBodyToContent() {
+  form.body.style.height = "auto";
+  form.body.style.height = `${form.body.scrollHeight + 4}px`;
 }
 
 // ---------- remembering ids ----------
@@ -115,6 +125,13 @@ function resourceOf(path) {
 function fillId(path) {
   const id = lastIds[resourceOf(path)];
   return id ? path.replace(":id", id) : path;
+}
+
+/** Replace ":movie_id" / ":employee_id" in a JSON body with the last ids seen. */
+function fillBodyIds(text) {
+  return text
+    .replace('":movie_id"', lastIds.movies ? `"${lastIds.movies}"` : '":movie_id"')
+    .replace('":employee_id"', lastIds.employees ? `"${lastIds.employees}"` : '":employee_id"');
 }
 
 /** Remember an _id from a response (single document, list, or insertMany ids). */
@@ -145,6 +162,10 @@ async function send(event) {
   }
   const path = withExplain(rawPath, form.explain.checked && !form.explain.disabled);
   const body = form.body.value.trim() || undefined;
+  if (body && /":(movie|employee)_id"/.test(body)) {
+    alert("Replace :movie_id / :employee_id in the body with real ids. Tip: create or list a movie and an employee first, then pick this endpoint again.");
+    return;
+  }
   const repeat = Math.min(Math.max(1, Number(form.repeat.value) || 1), 20);
 
   if (body) {
@@ -273,6 +294,7 @@ $("clear-history").addEventListener("click", () => {
   renderHistory();
 });
 $("request-form").addEventListener("submit", send);
+form.body.addEventListener("input", fitBodyToContent);
 setInterval(renderTokenStatus, 30_000);
 
 renderTokenStatus();
