@@ -14,7 +14,7 @@ modelling from access patterns, and embedding vs referencing with transactions.
 ```bash
 cd backend
 nvm use && npm install
-cp .env.example .env              # fill in MONGODB_URI and JWT_SECRET
+# create .env: see backend/docs/setup.md step 3 (MONGODB_URI, STAGE, JWT_SECRET, ...)
 npm run check:setup               # ✅ = Atlas reachable
 make test                         # in-memory MongoDB, no Atlas needed
 make deploy                       # API in Docker on :3000

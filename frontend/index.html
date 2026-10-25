@@ -32,11 +32,12 @@
           </div>
           <p id="endpoint-note" class="note"></p>
           <div class="options">
-            <label><input type="checkbox" id="explain" /> <code>?explain=true</code> (show query plan)</label>
+            <label id="explain-option"><input type="checkbox" id="explain" /> <code>?explain=true</code> (show query plan)</label>
+            <span id="explain-hint" class="note" hidden>No query plan for this endpoint. Try Movies → find or findOne.</span>
             <label>Repeat <input type="number" id="repeat" min="1" max="20" value="1" /> times</label>
           </div>
           <label class="body-label" for="body">JSON body</label>
-          <textarea id="body" rows="5" spellcheck="false" placeholder="{ }"></textarea>
+          <textarea id="body" rows="14" spellcheck="false" placeholder="{ }"></textarea>
         </form>
 
         <div class="metrics card" aria-live="polite">

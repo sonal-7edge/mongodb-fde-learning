@@ -76,6 +76,22 @@ describe('JWT authorizer on /api/*', () => {
         expect(res.status).toBe(404)
     })
 
+    it('every employee and movie endpoint requires a token (auth is added per route in app.js)', async () => {
+        const id = '64b000000000000000000000'
+        const endpoints = [
+            ['post', '/api/employees/admin/seed'], ['post', '/api/employees'], ['get', '/api/employees'],
+            ['get', `/api/employees/${id}`], ['patch', `/api/employees/${id}`], ['delete', `/api/employees/${id}`],
+            ['post', '/api/movies/admin/seed'], ['post', '/api/movies'], ['post', '/api/movies/bulk'],
+            ['get', '/api/movies'], ['get', '/api/movies/count'], ['get', '/api/movies/genres'],
+            ['patch', '/api/movies'], ['delete', '/api/movies'], ['get', `/api/movies/${id}`],
+            ['patch', `/api/movies/${id}`], ['post', `/api/movies/${id}/stock`], ['delete', `/api/movies/${id}`],
+        ]
+        for (const [method, path] of endpoints) {
+            const res = await supertest(app)[method](path).send({})
+            expect(res.status, `${method.toUpperCase()} ${path}`).toBe(401)
+        }
+    })
+
     it('refuses to start with a short JWT_SECRET', () => {
         expect(() => loadAuthConfig({ JWT_SECRET: 'too-short' })).toThrow(/at least 32 characters/)
     })
