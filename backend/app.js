@@ -12,9 +12,16 @@ const express = require('express')
  * app.js requires shared code through a service's synced copy, never the root shared/
  * (the Docker image does not contain the root entities/ and shared/ folders).
  */
+
+/**
+ * @import : Common Helpers
+ * app.js requires shared code through a service's synced copy, never the root shared/
+ * (the Docker image does not contain the root entities/ and shared/ folders).
+ */
 const { loadAuthConfig, requireAuth } = require('./services/platform/shared/auth.js')
 const { errorHandler, notFound } = require('./services/platform/shared/errors.js')
 const { serverTiming } = require('./services/platform/shared/timing.js')
+const { validate } = require('./services/platform/shared/validate.js')
 const { validate } = require('./services/platform/shared/validate.js')
 const { buildPlatformRouters } = require('./services/platform/routes/index.js')
 
@@ -72,6 +79,9 @@ const { getRental } = require('./services/rentals/routes/get.js')
 function buildApp(options = {}) {
     const authConfig = options.authConfig ?? loadAuthConfig(process.env)
     const { publicRouters, adminRouter } = buildPlatformRouters(authConfig)
+
+    // Every /api endpoint below starts with `auth`: it needs 'Authorization: Bearer <token>'.
+    const auth = requireAuth(authConfig)
 
     // Every /api endpoint below starts with `auth`: it needs 'Authorization: Bearer <token>'.
     const auth = requireAuth(authConfig)

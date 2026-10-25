@@ -21,6 +21,8 @@ let token = readStoredToken();
 const history = [];
 /** Last _id seen in a response, per resource ("movies", "employees"), used to fill ":id" in paths. */
 const lastIds = {};
+/** Last _id seen in a response, per resource ("movies", "employees"), used to fill ":id" in paths. */
+const lastIds = {};
 
 // ---------- token ----------
 
@@ -161,6 +163,12 @@ async function send(event) {
     return;
   }
   const path = withExplain(rawPath, form.explain.checked && !form.explain.disabled);
+  const rawPath = form.path.value.trim();
+  if (rawPath.includes(":id")) {
+    alert('Replace ":id" in the path with a real _id. Tip: create or list first, and the console fills it in for you.');
+    return;
+  }
+  const path = withExplain(rawPath, form.explain.checked && !form.explain.disabled);
   const body = form.body.value.trim() || undefined;
   if (body && /":(movie|employee)_id"/.test(body)) {
     alert("Replace :movie_id / :employee_id in the body with real ids. Tip: create or list a movie and an employee first, then pick this endpoint again.");
@@ -184,6 +192,7 @@ async function send(event) {
     for (let i = 0; i < repeat; i++) {
       const result = await callApi({ method, path, body, token });
       results.push(result);
+      rememberId(path, result.body);
       rememberId(path, result.body);
       addHistory(method, path, result);
     }
