@@ -8,7 +8,7 @@ try {
 const mongoose = require('mongoose')
 const { buildApp } = require('./app.js')
 
-const port = Number(process.env.PORT ?? 3000)
+const port = Number(process.env.PORT ?? 3004)
 
 async function main() {
     for (const name of ['MONGODB_URI', 'STAGE']) {

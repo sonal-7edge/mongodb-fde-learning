@@ -45,7 +45,7 @@ Create `backend/.env` with these variables:
 ```bash
 MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/movie_store?retryWrites=true&w=majority
 STAGE=dev
-PORT=3000
+PORT=3004
 ATLAS_FREE_TIER=true
 SEED_MAX=100000
 JWT_SECRET=<at least 32 characters, see below>
@@ -84,11 +84,11 @@ If `check:setup` fails:
 ## 5. Run it
 
 ```bash
-make deploy                       # builds movie-store:<version> and runs it on :3000
-curl localhost:3000/health        # no token needed
+make deploy                       # builds movie-store:<version> and runs it on :3004
+curl localhost:3004/health        # no token needed
 
 TOKEN=$(make -s token)            # signed with JWT_SECRET from .env, valid for JWT_EXPIRES_IN
-curl -H "Authorization: Bearer $TOKEN" localhost:3000/api/admin/overview
+curl -H "Authorization: Bearer $TOKEN" localhost:3004/api/admin/overview
 ```
 
 Without the header every `/api/*` call returns `401`.

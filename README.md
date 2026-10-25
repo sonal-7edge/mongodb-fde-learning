@@ -17,9 +17,9 @@ nvm use && npm install
 # create .env: see backend/docs/setup.md step 3 (MONGODB_URI, STAGE, JWT_SECRET, ...)
 npm run check:setup               # ✅ = Atlas reachable
 make test                         # in-memory MongoDB, no Atlas needed
-make deploy                       # API in Docker on :3000
+make deploy                       # API in Docker on :3004
 TOKEN=$(make -s token)
-curl -H "Authorization: Bearer $TOKEN" localhost:3000/api/admin/overview
+curl -H "Authorization: Bearer $TOKEN" localhost:3004/api/admin/overview
 
 cd ../frontend && npm install && npm run dev     # console on :5173 (forward this port)
 ```
@@ -61,12 +61,12 @@ Day to day (backend)
 │              │ syntax-checks every file   │
 ├──────────────┼────────────────────────────┤
 │              │ Runs the API locally on    │
-│ make dev     │ :3000 with auto-restart    │
+│ make dev     │ :3004 with auto-restart    │
 │              │ (no Docker)                │
 ├──────────────┼────────────────────────────┤
 │              │ Builds movie-store:1.0.0   │
 │ make deploy  │ and runs it in Docker on   │
-│              │ :3000, then waits for      │
+│              │ :3004, then waits for      │
 │              │ /health                    │
 ├──────────────┼────────────────────────────┤
 │ make logs    │ Follows the container logs │

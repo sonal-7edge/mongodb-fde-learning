@@ -29,5 +29,5 @@ This is a **teaching repo** for MongoDB. Readable code beats clever code.
 make test                   # all tests, in-memory MongoDB
 make dev                    # local server with auto-restart
 TOKEN=$(make -s token)      # access token for curl
-curl -H "Authorization: Bearer $TOKEN" "localhost:3000/api/...&explain=true"
+curl -H "Authorization: Bearer $TOKEN" "localhost:3004/api/...&explain=true"
 ```

@@ -1,6 +1,6 @@
 // Prints a signed access token for curl.
 // Usage:  TOKEN=$(make -s token)
-//         curl -H "Authorization: Bearer $TOKEN" localhost:3000/api/admin/overview
+//         curl -H "Authorization: Bearer $TOKEN" localhost:3004/api/admin/overview
 const { loadAuthConfig, signAccessToken } = require('../shared/auth.js')
 
 try {

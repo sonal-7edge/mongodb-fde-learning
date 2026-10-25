@@ -12,6 +12,7 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY . .
 
 USER node
+# Inside the container the app always listens on 3000; `make deploy` publishes it on the host as 3004.
 EXPOSE 3000
 HEALTHCHECK --interval=15s --timeout=3s --start-period=15s --retries=3 \
   CMD wget -qO- http://127.0.0.1:3000/health > /dev/null || exit 1

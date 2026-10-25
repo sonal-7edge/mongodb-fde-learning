@@ -1,8 +1,8 @@
 import { defineConfig } from "vite";
 
 // The backend (its Docker container, or `make dev` in backend/) that API calls are forwarded to.
-// Override: BACKEND_URL=http://other-host:3000 npm run dev
-const backend = process.env.BACKEND_URL ?? "http://localhost:3000";
+// Override: BACKEND_URL=http://other-host:3004 npm run dev
+const backend = process.env.BACKEND_URL ?? "http://localhost:3004";
 
 export default defineConfig({
   server: {
