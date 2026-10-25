@@ -1,8 +1,6 @@
 /**
  * Every endpoint the console can call. Each backend stage adds its endpoints here.
  * ":id" in a path is filled in with the last _id the console saw for that resource.
- * Every endpoint the console can call. Each backend stage adds its endpoints here.
- * ":id" in a path is filled in with the last _id the console saw for that resource.
  *
  * @typedef {Object} Endpoint
  * @property {string} group          heading in the side list
@@ -17,7 +15,6 @@
 
 /** @type {Endpoint[]} */
 export const endpoints = [
-  // ---------- Platform ----------
   // ---------- Platform ----------
   {
     group: "Platform",
