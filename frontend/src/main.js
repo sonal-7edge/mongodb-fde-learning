@@ -19,6 +19,8 @@ const form = {
 let token = readStoredToken();
 /** @type {object[]} */
 const history = [];
+/** Last _id seen in a response, per resource ("movies", "employees"), used to fill ":id" in paths. */
+const lastIds = {};
 
 // ---------- token ----------
 
@@ -95,11 +97,32 @@ function renderEndpointList() {
 function selectEndpoint(endpoint, button) {
   document.querySelectorAll("button.endpoint").forEach((b) => b.classList.toggle("active", b === button));
   form.method.value = endpoint.method;
-  form.path.value = endpoint.path;
+  form.path.value = fillId(endpoint.path);
   form.body.value = endpoint.body ? JSON.stringify(endpoint.body, null, 2) : "";
   form.explain.checked = false;
   form.explain.disabled = !endpoint.explain;
   form.note.textContent = endpoint.note ?? "";
+}
+
+// ---------- remembering ids ----------
+
+/** "/api/movies/abc" → "movies" */
+function resourceOf(path) {
+  return /^\/api\/(\w+)/.exec(path)?.[1] ?? null;
+}
+
+/** Replace ":id" with the last id we saw for that resource, if any. */
+function fillId(path) {
+  const id = lastIds[resourceOf(path)];
+  return id ? path.replace(":id", id) : path;
+}
+
+/** Remember an _id from a response (single document, list, or insertMany ids). */
+function rememberId(path, body) {
+  const resource = resourceOf(path);
+  const data = body?.data;
+  const id = (Array.isArray(data) ? data[0]?._id : data?._id) ?? body?.inserted_ids?.[0];
+  if (resource && typeof id === "string") lastIds[resource] = id;
 }
 
 // ---------- sending ----------
@@ -115,7 +138,12 @@ function withExplain(path, explain) {
 async function send(event) {
   event.preventDefault();
   const method = form.method.value;
-  const path = withExplain(form.path.value.trim(), form.explain.checked && !form.explain.disabled);
+  const rawPath = form.path.value.trim();
+  if (rawPath.includes(":id")) {
+    alert('Replace ":id" in the path with a real _id. Tip: create or list first, and the console fills it in for you.');
+    return;
+  }
+  const path = withExplain(rawPath, form.explain.checked && !form.explain.disabled);
   const body = form.body.value.trim() || undefined;
   const repeat = Math.min(Math.max(1, Number(form.repeat.value) || 1), 20);
 
@@ -135,6 +163,7 @@ async function send(event) {
     for (let i = 0; i < repeat; i++) {
       const result = await callApi({ method, path, body, token });
       results.push(result);
+      rememberId(path, result.body);
       addHistory(method, path, result);
     }
     const last = results[results.length - 1];

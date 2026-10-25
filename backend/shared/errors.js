@@ -10,8 +10,12 @@ class HttpError extends Error {
      */
     constructor(status, message, details) {
         super(message)
+        this.name = 'HttpError'
         this.status = status
         this.details = details
+        // Each service has its own synced copy of this file, so `instanceof HttpError` fails across
+        // services (two copies = two different classes). The error handler checks this flag instead.
+        this.isHttpError = true
     }
 }
 
@@ -36,7 +40,7 @@ function errorHandler(error, _req, res, _next) {
  * @returns {{status: number, body: {error: string, details?: any}}}
  */
 function toResponse(error) {
-    if (error instanceof HttpError) {
+    if (error?.isHttpError) {
         return { status: error.status, body: { error: error.message, details: error.details } }
     }
     // Joi validation error (from shared/validate.js)

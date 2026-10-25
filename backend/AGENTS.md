@@ -14,7 +14,7 @@ This is a **teaching repo** for MongoDB. Readable code beats clever code.
 5. Plain JavaScript (CommonJS: `require` / `module.exports`) with JSDoc. No TypeScript, no build step. Tests are `.test.mjs` because Vitest must be `import`ed; they load app code with `createRequire`.
 6. Request validation uses Joi schemas through `shared/validate.js`. Field names are snake_case.
 7. Never create indexes from application code at startup. Every index is added deliberately, for a named access pattern.
-8. One function per access pattern in `queries/`; route handlers stay thin.
+8. One handler per file in `services/<service>/routes/` (exported with `module.exports.<name>`). Every endpoint is registered in `app.js` with its `auth` and Joi `validate(...)`, so all routes are visible in one place. Joi schemas live in `utils/joi_schema.js`.
 
 ## Never
 
