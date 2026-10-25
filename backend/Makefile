@@ -57,7 +57,7 @@ docker-build: build ## Build the Docker image $(IMAGE)
 	docker build -t $(IMAGE) -t $(PROJECT):latest --label org.opencontainers.image.version=$(VERSION) .
 
 deploy: docker-build ## Run the image locally as container $(CONTAINER) and wait for /health
-	@test -f .env || { echo "❌ .env not found. Copy .env.example to .env first."; exit 1; }
+	@test -f .env || { echo "❌ .env not found. Create it as shown in docs/setup.md step 3."; exit 1; }
 	@docker rm -f $(CONTAINER) > /dev/null 2>&1 || true
 	docker run -d --name $(CONTAINER) --env-file .env -p $(PORT):3000 --restart unless-stopped $(IMAGE)
 	@for i in $$(seq 1 30); do \
