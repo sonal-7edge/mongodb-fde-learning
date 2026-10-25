@@ -40,10 +40,22 @@ All commands below run in the `backend/` folder.
 
 ## 3. Configure
 
+Create `backend/.env` with these variables:
+
 ```bash
-cd backend
-cp .env.example .env
-# Generate a JWT secret and put it in .env as JWT_SECRET=...
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/movie_store?retryWrites=true&w=majority
+STAGE=dev
+PORT=3000
+ATLAS_FREE_TIER=true
+SEED_MAX=100000
+JWT_SECRET=<at least 32 characters, see below>
+JWT_EXPIRES_IN=1h
+DEV_TOKEN_ENDPOINT=true
+```
+
+Generate the JWT secret with:
+
+```bash
 node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 ```
 
@@ -67,7 +79,7 @@ If `check:setup` fails:
 | `querySrv ENOTFOUND` | Corporate DNS/VPN blocks SRV lookups. Try another network, or use the standard `mongodb://` string from Atlas |
 | `Authentication failed` | Check user/password; URL-encode special characters in the password |
 | `Server selection timed out` | Your IP is missing in Atlas Network Access, or a VPN/firewall blocks port 27017 |
-| `MONGODB_URI is missing` | `cp .env.example .env` and fill it in |
+| `MONGODB_URI is missing` | Create `backend/.env` as shown in step 3 |
 
 ## 5. Run it
 

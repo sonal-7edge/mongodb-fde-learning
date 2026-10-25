@@ -18,6 +18,7 @@
     "verify:tests": "node scripts/verify-tests.js"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.6.0",
     "express": "^5.3.0",
     "joi": "^18.3.0",
     "jose": "^6.2.13",
