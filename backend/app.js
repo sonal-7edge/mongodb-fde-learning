@@ -23,6 +23,7 @@ const { buildPlatformRouters } = require('./services/platform/routes/index.js')
  */
 const employeeSchema = require('./services/employee_management/utils/joi_schema.js')
 const movieSchema = require('./services/movie_store/utils/joi_schema.js')
+const rentalSchema = require('./services/rentals/utils/joi_schema.js')
 
 /**
  * @import : Route handlers | Employee Management (each does ONE operation on ONE record)
@@ -49,6 +50,14 @@ const { updateMovies } = require('./services/movie_store/routes/updateMany.js')
 const { adjustStock } = require('./services/movie_store/routes/findOneAndUpdate.js')
 const { deleteMovie } = require('./services/movie_store/routes/softDelete.js')
 const { purgeMovies } = require('./services/movie_store/routes/deleteMany.js')
+
+/**
+ * @import : Route handlers | Rentals (rent and return each run inside one transaction)
+ */
+const { rentMovie } = require('./services/rentals/routes/rent.js')
+const { returnRental } = require('./services/rentals/routes/return.js')
+const { listRentals } = require('./services/rentals/routes/list.js')
+const { getRental } = require('./services/rentals/routes/get.js')
 
 // Query-operator injection (`?genre[$ne]=x`) is blocked twice, without mongoose's sanitizeFilter
 // (which would also reject the $gte/$in operators our own code builds):
@@ -99,6 +108,12 @@ function buildApp(options = {}) {
     app.patch('/api/movies/:id', auth, validate({ params: movieSchema.idParams, body: movieSchema.updateMovieBody }), updateMovie)     // updateOne
     app.post('/api/movies/:id/stock', auth, validate({ params: movieSchema.idParams, body: movieSchema.adjustStockBody }), adjustStock) // findOneAndUpdate
     app.delete('/api/movies/:id', auth, validate({ params: movieSchema.idParams }), deleteMovie)                                      // updateOne (soft delete)
+
+    // ---------- Rentals ----------
+    app.post('/api/rentals', auth, validate({ body: rentalSchema.rentMovieBody }), rentMovie)                                       // transaction
+    app.get('/api/rentals', auth, validate({ query: rentalSchema.listRentalsQuery }), listRentals)
+    app.get('/api/rentals/:id', auth, validate({ params: rentalSchema.idParams, query: rentalSchema.getRentalQuery }), getRental)
+    app.post('/api/rentals/:id/return', auth, validate({ params: rentalSchema.idParams }), returnRental)                           // transaction
 
     app.use(notFound)
     app.use(errorHandler)

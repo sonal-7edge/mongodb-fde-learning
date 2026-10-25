@@ -76,7 +76,7 @@ describe('JWT authorizer on /api/*', () => {
         expect(res.status).toBe(404)
     })
 
-    it('every employee and movie endpoint requires a token (auth is added per route in app.js)', async () => {
+    it('every employee, movie and rental endpoint requires a token (auth is added per route in app.js)', async () => {
         const id = '64b000000000000000000000'
         const endpoints = [
             ['post', '/api/employees/admin/seed'], ['post', '/api/employees'], ['get', '/api/employees'],
@@ -85,6 +85,7 @@ describe('JWT authorizer on /api/*', () => {
             ['get', '/api/movies'], ['get', '/api/movies/count'], ['get', '/api/movies/genres'],
             ['patch', '/api/movies'], ['delete', '/api/movies'], ['get', `/api/movies/${id}`],
             ['patch', `/api/movies/${id}`], ['post', `/api/movies/${id}/stock`], ['delete', `/api/movies/${id}`],
+            ['post', '/api/rentals'], ['get', '/api/rentals'], ['get', `/api/rentals/${id}`], ['post', `/api/rentals/${id}/return`],
         ]
         for (const [method, path] of endpoints) {
             const res = await supertest(app)[method](path).send({})

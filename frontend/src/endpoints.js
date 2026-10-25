@@ -199,4 +199,41 @@ export const endpoints = [
     note: "Permanently removes every movie with deleted:true.",
   },
 
+
+  // ---------- Rentals ----------
+  {
+    group: "Rentals",
+    name: "Rent a movie (transaction)",
+    method: "POST",
+    path: "/api/rentals",
+    body: {
+      movie_id: ":movie_id",
+      employee_id: ":employee_id",
+      customer: { name: "Ravi Kumar", email: "ravi@example.com", phone: "+91 98450 00000" },
+      days: 3,
+    },
+    note: "One transaction: employee must exist → take a copy ($inc) → insert rental. Any failure rolls back all of it.",
+  },
+  {
+    group: "Rentals",
+    name: "Return (transaction)",
+    method: "POST",
+    path: "/api/rentals/:id/return",
+    note: "One transaction: mark returned + push event → put the copy back. Returning twice: 409.",
+  },
+  {
+    group: "Rentals",
+    name: "List",
+    method: "GET",
+    path: "/api/rentals?status=active&page=1&limit=20",
+    note: "Filters: status, customer_email, employee_id, movie_id (the _id inside the snapshot, no join).",
+  },
+  {
+    group: "Rentals",
+    name: "Get by id",
+    method: "GET",
+    path: "/api/rentals/:id",
+    explain: true,
+    note: "Movie title and employee name come from the snapshot inside the rental.",
+  },
 ];
