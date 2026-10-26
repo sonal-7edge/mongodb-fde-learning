@@ -26,7 +26,7 @@ function notFound(req, _res, next) {
 
 /**
  * Turns any thrown error into a JSON response. Never sends a stack trace to the client.
- * Joi / ValidationError / CastError → 400, duplicate key → 409, HttpError → its status, else 500.
+ * Joi / ValidationError / CastError → 400, duplicate key → 409, maxTimeMS exceeded → 504, HttpError → its status, else 500.
  */
 // eslint-disable-next-line no-unused-vars
 function errorHandler(error, _req, res, _next) {
@@ -58,6 +58,10 @@ function toResponse(error) {
     // 11000 is MongoDB's duplicate key error code (a unique index refused the write).
     if (error?.code === 11000) {
         return { status: 409, body: { error: 'Duplicate key', details: error.keyValue } }
+    }
+    // 50 is MaxTimeMSExpired: the query ran longer than its maxTimeMS and MongoDB stopped it.
+    if (error?.code === 50) {
+        return { status: 504, body: { error: 'Query took too long and was stopped (maxTimeMS)' } }
     }
     // Malformed JSON body from express.json()
     if (error?.type === 'entity.parse.failed') {

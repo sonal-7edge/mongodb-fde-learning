@@ -22,7 +22,7 @@ const MAX_RENTAL_EVENTS = 5
  * @property {{daily_rate: number, days: number, total: number, currency: string}} pricing
  *           embedded, computed once at rent time
  * @property {{type: 'rented'|'extended'|'returned', at: Date, by_employee_id: ObjectId}[]} events
- *           bounded array (max 20)
+ *           bounded array (max MAX_RENTAL_EVENTS = 5)
  * @property {Date} rented_at
  * @property {Date} due_at
  * @property {Date|null} returned_at

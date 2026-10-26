@@ -7,6 +7,7 @@ const Joi = require('joi')
  * @import : Common Helpers
  */
 const { MAX_LIMIT, DEFAULT_LIMIT } = require('../shared/pagination')
+const { MOVIE_INDEXES } = require('./indexes')
 
 const SEED_MAX = Number(process.env.SEED_MAX ?? 100000)
 
@@ -86,6 +87,15 @@ const findMoviesQuery = Joi.object({
     explain,
 })
 
+/** GET /api/movies/by-title */
+const findMoviesByTitleQuery = Joi.object({
+    title: Joi.string().trim().min(1).max(200).required(),
+    limit: Joi.number().integer().min(1).max(MAX_LIMIT).default(DEFAULT_LIMIT),
+    // Optional time limit; MongoDB stops the query after this many ms (→ 504)
+    max_time_ms: Joi.number().integer().min(1).max(60000),
+    explain,
+})
+
 /** GET /api/movies/count */
 const countMoviesQuery = Joi.object(movieFilterFields)
 
@@ -122,8 +132,15 @@ const seedMoviesBody = Joi.object({
     seed: Joi.number().integer().default(42),
 })
 
+/** POST/DELETE /api/movies/admin/indexes/:name — only the indexes defined in utils/indexes.js */
+const indexNameParams = Joi.object({
+    name: Joi.string().valid(...Object.keys(MOVIE_INDEXES)).required(),
+})
+
 module.exports = {
     idParams,
+    findMoviesByTitleQuery,
+    indexNameParams,
     createMovieBody,
     insertMoviesBody,
     findMoviesQuery,

@@ -128,6 +128,34 @@ describe('movie_store CRUD (one controller per MongoDB operation)', () => {
         expect((await api.delete('/api/movies')).body.result).toMatchObject({ deletedCount: 1 })
     })
 
+    it('by-title: prefix search is a COLLSCAN without an index and an IXSCAN with { title: 1 }', async () => {
+        await api.post('/api/movies/bulk').send({ movies: [DRAMA, { ...DRAMA, title: 'Space Cowboys' }, COMEDY] })
+
+        const before = await api.get('/api/movies/by-title?title=Space&explain=true')
+        expect(before.status).toBe(200)
+        expect(before.body.data.map((m) => m.title)).toEqual(['Space Adventure', 'Space Cowboys'])
+        expect(before.body.plan).toMatchObject({ stage: 'COLLSCAN', docsExamined: 3, hasSortStage: true })
+
+        expect((await api.post('/api/movies/admin/indexes/title')).status).toBe(201)
+        const listed = await api.get('/api/movies/admin/indexes')
+        expect(listed.body.data.map((i) => i.name)).toEqual(['_id_', 'title_1'])
+
+        const after = await api.get('/api/movies/by-title?title=Space&explain=true')
+        expect(after.body.data.map((m) => m.title)).toEqual(['Space Adventure', 'Space Cowboys'])
+        expect(after.body.plan).toMatchObject({ stage: 'IXSCAN', indexName: 'title_1', docsExamined: 2, hasSortStage: false })
+
+        expect((await api.delete('/api/movies/admin/indexes/title')).status).toBe(200)
+        expect((await api.delete('/api/movies/admin/indexes/title')).status).toBe(404)
+    })
+
+    it('by-title: treats the text literally and only allows known index names', async () => {
+        await api.post('/api/movies').send({ ...DRAMA, title: 'A.I.' })
+        await api.post('/api/movies').send({ ...DRAMA, title: 'ABIX' })
+        expect((await api.get('/api/movies/by-title?title=A.I')).body.data.map((m) => m.title)).toEqual(['A.I.'])
+        expect((await api.get('/api/movies/by-title')).status).toBe(400)
+        expect((await api.post('/api/movies/admin/indexes/rating')).status).toBe(400)
+    })
+
     it('seed: inserts N movies in batches, repeatably', async () => {
         const res = await api.post('/api/movies/admin/seed').send({ count: 250, batch_size: 100, seed: 7 })
         expect(res.status).toBe(201)
