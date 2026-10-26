@@ -84,6 +84,8 @@ describe('JWT authorizer on /api/*', () => {
             ['post', '/api/movies/admin/seed'], ['post', '/api/movies'], ['post', '/api/movies/bulk'],
             ['get', '/api/movies'], ['get', '/api/movies/count'], ['get', '/api/movies/genres'],
             ['patch', '/api/movies'], ['delete', '/api/movies'], ['get', `/api/movies/${id}`],
+            ['get', '/api/movies/by-title?title=x'], ['get', '/api/movies/admin/indexes'],
+            ['post', '/api/movies/admin/indexes/title'], ['delete', '/api/movies/admin/indexes/title'],
             ['patch', `/api/movies/${id}`], ['post', `/api/movies/${id}/stock`], ['delete', `/api/movies/${id}`],
             ['post', '/api/rentals'], ['get', '/api/rentals'], ['get', `/api/rentals/${id}`], ['post', `/api/rentals/${id}/return`],
         ]
