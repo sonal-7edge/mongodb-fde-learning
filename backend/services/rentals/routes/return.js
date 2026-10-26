@@ -26,14 +26,14 @@ const { HttpError } = require('../shared/errors')
  * @apiError    -- (404) Rental not found, (409) Already returned
  */
 module.exports.returnRental = async (req, res, next) => {
-    const { id } = req.valid.params
+    const _id = new mongoose.Types.ObjectId(decodeURIComponent(req.valid.params.id))
     const session = await mongoose.startSession()
     try {
         let rental
         await session.withTransaction(async () => {
             const now = new Date()
             rental = await Rental.findOneAndUpdate(
-                { _id: id, status: { $ne: 'returned' }, deleted: false },
+                { _id, status: { $ne: 'returned' }, deleted: false },
                 {
                     $set: { status: 'returned', returned_at: now, updated_by: req.auth.sub },
                     $push: { events: { type: 'returned', at: now } },
@@ -41,7 +41,7 @@ module.exports.returnRental = async (req, res, next) => {
                 { returnDocument: 'after', runValidators: true, session, lean: true },
             )
             if (!rental) {
-                const exists = await Rental.exists({ _id: id, deleted: false }).session(session)
+                const exists = await Rental.exists({ _id, deleted: false }).session(session)
                 throw exists ? new HttpError(409, 'Already returned') : new HttpError(404, 'Rental not found')
             }
             await Movie.updateOne({ _id: rental.movie._id }, { $inc: { 'inventory.available': 1 } }, { session })

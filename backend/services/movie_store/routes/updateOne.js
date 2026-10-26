@@ -1,4 +1,9 @@
 /**
+ * @import : External Dependencies
+ */
+const mongoose = require('mongoose')
+
+/**
  * @import : Entities
  */
 const Movie = require('../entities/Movie')
@@ -18,9 +23,10 @@ const { toSetPaths } = require('../shared/update')
  */
 module.exports.updateMovie = async (req, res, next) => {
     try {
+        const _id = new mongoose.Types.ObjectId(decodeURIComponent(req.valid.params.id))
         const update = { $set: { ...toSetPaths(req.valid.body), updated_by: req.auth.sub } }
         // runValidators: schema rules (enum, min/max) are NOT checked on updates unless you ask
-        const result = await Movie.updateOne({ _id: req.valid.params.id, deleted: false }, update, { runValidators: true })
+        const result = await Movie.updateOne({ _id, deleted: false }, update, { runValidators: true })
         // An update that matches nothing is not an error in MongoDB; we turn it into a 404
         if (result.matchedCount === 0) throw new HttpError(404, 'Movie not found')
         return res.status(200).json({ operation: 'updateOne', update, result })

@@ -21,7 +21,9 @@ async function main() {
     // Build first: this checks JWT_SECRET before we spend time connecting.
     const app = buildApp()
 
-    // One connection pool for the whole app (Atlas M0 allows 500 connections).
+    // One connection pool for the whole app. Every require('mongoose') shares it, so models and routes need nothing passed in.
+    // maxPoolSize: at most 20 queries run at once; extra ones wait for a free socket (Atlas M0 allows 500 connections).
+    // serverSelectionTimeoutMS: if no server is reachable within 10s, connect() fails and main().catch exits instead of hanging.
     await mongoose.connect(process.env.MONGODB_URI, { maxPoolSize: 20, serverSelectionTimeoutMS: 10_000 })
     console.log(`Connected to MongoDB database "${mongoose.connection.name}" (STAGE=${process.env.STAGE})`)
 
