@@ -34,8 +34,11 @@ const listRentalsQuery = Joi.object({
     customer_email: Joi.string().trim().lowercase().email(),
     employee_id: objectId,
     movie_id: objectId,
+    // Movie title (from the snapshot) starts with this text (case-sensitive)
+    movie_title: Joi.string().trim().min(1).max(200),
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(MAX_LIMIT).default(DEFAULT_LIMIT),
+    explain: Joi.boolean().default(false),
 })
 
 /** GET /api/rentals/:id */

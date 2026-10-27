@@ -11,7 +11,16 @@
  * @property {boolean} [explain]     true = supports ?explain=true
  * @property {object} [body]         default JSON body
  * @property {string} [note]         one line shown under the request
+ * @property {Search} [search]       shows a search box that fills one query parameter
  */
+
+/**
+ * @typedef {Object} Search
+ * @property {string} param   query parameter the box fills, e.g. "title"
+ * @property {string} label   shown before the box
+ */
+
+const MOVIE_TITLE_SEARCH = { param: "title", label: "Title starts with" };
 
 /** @type {Endpoint[]} */
 export const endpoints = [
@@ -102,9 +111,10 @@ export const endpoints = [
     group: "Movies: read",
     name: "find (list)",
     method: "GET",
-    path: "/api/movies?genre=drama&sort=rating&limit=20",
+    path: "/api/movies?sort=rating&limit=20",
     explain: true,
-    note: "Model.find. Filters: genre, kind, year_from, year_to, min_rating, in_stock. Next page: add &cursor=<next_cursor>.",
+    search: MOVIE_TITLE_SEARCH,
+    note: "Model.find. Filters: title (starts with, case-sensitive), genre, kind, year_from, year_to, min_rating, in_stock. Next page: add &cursor=<next_cursor>. The first movie's _id fills :id in the other endpoints.",
   },
   {
     group: "Movies: read",
@@ -119,14 +129,57 @@ export const endpoints = [
     name: "countDocuments",
     method: "GET",
     path: "/api/movies/count?kind=movie&in_stock=true",
-    note: "Counts matching movies without returning them.",
+    explain: true,
+    search: MOVIE_TITLE_SEARCH,
+    note: "Counts matching movies without returning them. The plan is for the $match + $group that countDocuments runs.",
   },
   {
     group: "Movies: read",
     name: "distinct genres",
     method: "GET",
     path: "/api/movies/genres",
-    note: "Model.distinct on an array field: every element counts once.",
+    explain: true,
+    note: "Model.distinct on an array field: every element counts once. No index on genres, so it reads every movie.",
+  },
+
+  // ---------- Movies: indexes ----------
+  {
+    group: "Movies: indexes",
+    name: "List indexes",
+    method: "GET",
+    path: "/api/movies/admin/indexes",
+    note: "Every index on movies, with its size. After a seed only _id_ exists.",
+  },
+  {
+    group: "Movies: indexes",
+    name: "find by title prefix",
+    method: "GET",
+    path: "/api/movies/by-title?title=Com&limit=20",
+    explain: true,
+    search: MOVIE_TITLE_SEARCH,
+    note: "Titles starting with the text (case-sensitive). Tick explain: COLLSCAN without the index, IXSCAN on title_1 with it.",
+  },
+  {
+    group: "Movies: indexes",
+    name: "find by title, 30 ms limit",
+    method: "GET",
+    path: "/api/movies/by-title?title=Com&limit=20&max_time_ms=30",
+    search: MOVIE_TITLE_SEARCH,
+    note: "maxTimeMS: on a large collection the COLLSCAN gives up with 504. With the index it returns 200.",
+  },
+  {
+    group: "Movies: indexes",
+    name: "createIndex { title: 1 }",
+    method: "POST",
+    path: "/api/movies/admin/indexes/title",
+    note: "Builds title_1 (reads the whole collection once; ms = build time). Creating it again is a no-op.",
+  },
+  {
+    group: "Movies: indexes",
+    name: "dropIndex { title: 1 }",
+    method: "DELETE",
+    path: "/api/movies/admin/indexes/title",
+    note: "Removes title_1 so the COLLSCAN can be shown again. 404 if it doesn't exist.",
   },
 
   // ---------- Movies: write ----------
@@ -226,7 +279,9 @@ export const endpoints = [
     name: "List",
     method: "GET",
     path: "/api/rentals?status=active&page=1&limit=20",
-    note: "Filters: status, customer_email, employee_id, movie_id (the _id inside the snapshot, no join).",
+    explain: true,
+    search: { param: "movie_title", label: "Movie title starts with" },
+    note: "Filters: status, customer_email, employee_id, movie_id, movie_title (all read from the snapshot, no join). The plan is for the page query; paginate also runs a count.",
   },
   {
     group: "Rentals",

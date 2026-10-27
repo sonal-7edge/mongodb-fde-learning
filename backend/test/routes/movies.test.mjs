@@ -148,6 +148,27 @@ describe('movie_store CRUD (one controller per MongoDB operation)', () => {
         expect((await api.delete('/api/movies/admin/indexes/title')).status).toBe(404)
     })
 
+    it('find, count and distinct: title prefix filter and ?explain=true plans', async () => {
+        await api.post('/api/movies/bulk').send({ movies: [DRAMA, { ...DRAMA, title: 'Space Cowboys', genres: ['action'] }, COMEDY] })
+
+        const found = await api.get('/api/movies?title=Space&explain=true')
+        expect(found.body.data.map((m) => m.title).sort()).toEqual(['Space Adventure', 'Space Cowboys'])
+        expect(found.body.plan).toMatchObject({ stage: 'COLLSCAN', docsExamined: 3 })
+
+        const counted = await api.get('/api/movies/count?title=Space&explain=true')
+        expect(counted.body.count).toBe(2)
+        expect(counted.body.plan).toMatchObject({ stage: 'COLLSCAN', docsExamined: 3 })
+
+        await api.post('/api/movies/admin/indexes/title')
+        expect((await api.get('/api/movies?title=Space&explain=true')).body.plan).toMatchObject({ stage: 'IXSCAN', indexName: 'title_1' })
+        const countedWithIndex = await api.get('/api/movies/count?title=Space&explain=true')
+        expect(countedWithIndex.body).toMatchObject({ count: 2, plan: { indexName: 'title_1' } })
+
+        const genres = await api.get('/api/movies/genres?explain=true')
+        expect(genres.body.data).toEqual(['action', 'comedy', 'drama', 'sci-fi'])
+        expect(genres.body.plan).toMatchObject({ stage: 'COLLSCAN', docsExamined: 3 })
+    })
+
     it('by-title: treats the text literally and only allows known index names', async () => {
         await api.post('/api/movies').send({ ...DRAMA, title: 'A.I.' })
         await api.post('/api/movies').send({ ...DRAMA, title: 'ABIX' })

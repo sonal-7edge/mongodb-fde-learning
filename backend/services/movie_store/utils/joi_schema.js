@@ -70,6 +70,8 @@ const insertMoviesBody = Joi.object({
  * Filters shared by find, count and updateMany. Every key maps to one condition in buildMovieFilter().
  */
 const movieFilterFields = {
+    // Title starts with this text (case-sensitive)
+    title: Joi.string().trim().min(1).max(200),
     genre,
     kind: Joi.string().valid('movie', 'series'),
     year_from: Joi.number().integer().min(1870).max(2100),
@@ -97,7 +99,10 @@ const findMoviesByTitleQuery = Joi.object({
 })
 
 /** GET /api/movies/count */
-const countMoviesQuery = Joi.object(movieFilterFields)
+const countMoviesQuery = Joi.object({ ...movieFilterFields, explain })
+
+/** GET /api/movies/genres */
+const distinctGenresQuery = Joi.object({ explain })
 
 /** GET /api/movies/:id */
 const findMovieQuery = Joi.object({ explain })
@@ -145,6 +150,7 @@ module.exports = {
     insertMoviesBody,
     findMoviesQuery,
     countMoviesQuery,
+    distinctGenresQuery,
     findMovieQuery,
     updateMovieBody,
     updateMoviesBody,

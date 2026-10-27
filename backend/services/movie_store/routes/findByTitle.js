@@ -7,6 +7,7 @@ const Movie = require('../entities/Movie')
  * @import : Common Helpers
  */
 const { runWithOptionalExplain } = require('../shared/explain')
+const { buildMovieFilter } = require('../utils/helpers')
 
 /**
  * Find Movies by Title | Movie Store
@@ -23,10 +24,8 @@ module.exports.findMoviesByTitle = async (req, res, next) => {
     try {
         const { title, limit, max_time_ms, explain } = req.valid.query
 
-        // An anchored (^), case-sensitive regex is a prefix search, so it can use the title index.
-        // Special characters are escaped so the user's text is matched literally.
-        const prefix = title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-        const filter = { title: { $regex: `^${prefix}` }, deleted: false }
+        // { title: { $regex: '^<text>' }, deleted: false }: a prefix search, so it can use the title index
+        const filter = buildMovieFilter({ title })
 
         let query = Movie.find(filter).sort({ title: 1 }).limit(limit).lean()
         if (max_time_ms) query = query.maxTimeMS(max_time_ms)

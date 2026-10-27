@@ -109,7 +109,7 @@ function buildApp(options = {}) {
     app.get('/api/movies', auth, validate({ query: movieSchema.findMoviesQuery }), findMovies)                    // find
     app.get('/api/movies/by-title', auth, validate({ query: movieSchema.findMoviesByTitleQuery }), findMoviesByTitle)   // find (title prefix)
     app.get('/api/movies/count', auth, validate({ query: movieSchema.countMoviesQuery }), countMovies)             // countDocuments
-    app.get('/api/movies/genres', auth, distinctGenres)                                                          // distinct
+    app.get('/api/movies/genres', auth, validate({ query: movieSchema.distinctGenresQuery }), distinctGenres)   // distinct
     app.patch('/api/movies', auth, validate({ body: movieSchema.updateMoviesBody }), updateMovies)                // updateMany
     app.delete('/api/movies', auth, purgeMovies)                                                                 // deleteMany
     app.get('/api/movies/:id', auth, validate({ params: movieSchema.idParams, query: movieSchema.findMovieQuery }), findMovie)          // findOne

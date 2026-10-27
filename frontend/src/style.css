@@ -127,6 +127,8 @@ input, select, textarea {
 .request-line input { flex: 1; min-width: 0; }
 
 .note { color: var(--muted); margin: 8px 0 0; }
+.search { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; color: var(--muted); }
+.search input { flex: 1; min-width: 0; color: var(--text); }
 .options { display: flex; flex-wrap: wrap; gap: 16px; margin: 10px 0; }
 .options input[type="number"] { width: 56px; }
 .body-label { display: block; color: var(--muted); margin-bottom: 4px; }
@@ -178,3 +180,36 @@ th { color: var(--muted); font-weight: 500; }
 /* the hidden attribute must win over display rules like label { display: ... } */
 [hidden] { display: none !important; }
 .options .note { margin: 0; }
+
+/* ---------- query plan explainer ---------- */
+h3 { font-size: 13px; margin: 0 0 6px; }
+.plan > * + * { margin-top: 14px; }
+.plan-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.plan-head h2 { margin: 0; }
+.stage-badge { font: 600 12px ui-monospace, Menlo, Consolas, monospace; padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; }
+
+.verdict { border-left: 4px solid currentColor; padding: 8px 12px; background: var(--code-bg); border-radius: 0 6px 6px 0; }
+.verdict p { margin: 0; color: var(--text); }
+.verdict p + p { margin-top: 4px; }
+.verdict p.good { color: var(--good); font-weight: 600; }
+.verdict p.warn { color: var(--warn); font-weight: 600; }
+.verdict p.bad { color: var(--bad); font-weight: 600; }
+.verdict .verdict-title { font-size: 16px; font-weight: 700; color: inherit; }
+
+.bars { display: grid; grid-template-columns: max-content 1fr max-content; gap: 6px 10px; align-items: center; }
+.bar-track { height: 12px; background: var(--code-bg); border-radius: 6px; overflow: hidden; }
+.bar { display: block; height: 100%; min-width: 0; background: var(--accent); border-radius: 6px; transition: width 0.3s; }
+.bar-value { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+
+.pipeline ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.pipeline li { padding-left: 2px; }
+.stage-chip { font: 600 12px ui-monospace, Menlo, Consolas, monospace; background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
+.stage-chip.bad { color: var(--bad); border-color: currentColor; }
+.stage-help { display: block; color: var(--muted); }
+
+.compare table { width: 100%; }
+.compare td:first-child { color: var(--muted); }
+
+.hints ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.plan-raw summary { cursor: pointer; color: var(--muted); }
+.plan-raw .plan-grid { margin-top: 8px; }

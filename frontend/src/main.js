@@ -1,5 +1,6 @@
 import { callApi, tokenExpiry } from "./api.js";
 import { endpoints } from "./endpoints.js";
+import { escape, renderPlan, stageClass } from "./plan.js";
 
 const TOKEN_KEY = "movie-store-token";
 const HISTORY_LIMIT = 20;
@@ -10,6 +11,7 @@ const form = {
   path: $("path"),
   body: $("body"),
   explain: $("explain"),
+  search: $("search"),
   repeat: $("repeat"),
   note: $("endpoint-note"),
   send: $("send"),
@@ -21,6 +23,8 @@ let token = readStoredToken();
 const history = [];
 /** Last _id seen in a response, per resource ("movies", "employees"), used to fill ":id" in paths. */
 const lastIds = {};
+/** Last plan per request (method + path without explain), so a re-run can show before → after. */
+const lastPlans = new Map();
 
 // ---------- token ----------
 
@@ -100,12 +104,38 @@ function selectEndpoint(endpoint, button) {
   form.path.value = fillId(endpoint.path);
   form.body.value = endpoint.body ? fillBodyIds(JSON.stringify(endpoint.body, null, 2)) : "";
   fitBodyToContent();
-  // Only endpoints that run a MongoDB query can return a plan; hide the option elsewhere
-  form.explain.checked = false;
+  // Only endpoints that run a MongoDB query can return a plan; hide the option elsewhere.
+  // On by default where it exists: the plan is the point of this console.
+  form.explain.checked = Boolean(endpoint.explain);
   form.explain.disabled = !endpoint.explain;
   document.getElementById("explain-option").hidden = !endpoint.explain;
   document.getElementById("explain-hint").hidden = Boolean(endpoint.explain);
   form.note.textContent = endpoint.note ?? "";
+  showSearch(endpoint.search);
+}
+
+// ---------- search box ----------
+
+/** @type {import("./endpoints.js").Search|null} */
+let activeSearch = null;
+
+/** Show the search box for endpoints that take a search term, prefilled from the path. */
+function showSearch(search) {
+  activeSearch = search ?? null;
+  $("search-option").hidden = !search;
+  if (!search) return;
+  $("search-label").textContent = search.label;
+  form.search.value = new URL(form.path.value, location.origin).searchParams.get(search.param) ?? "";
+}
+
+/** Typing in the search box rewrites that one parameter in the path. */
+function applySearch() {
+  if (!activeSearch) return;
+  const url = new URL(form.path.value.trim() || "/", location.origin);
+  const term = form.search.value.trim();
+  if (term) url.searchParams.set(activeSearch.param, term);
+  else url.searchParams.delete(activeSearch.param);
+  form.path.value = url.pathname + url.search;
 }
 
 /** Grow the JSON editor so the whole body is visible (CSS keeps it between 260px and 70% of the screen). */
@@ -177,6 +207,9 @@ async function send(event) {
     }
   }
 
+  const planKey = `${method} ${withExplain(rawPath, false)}`;
+  const previousPlan = lastPlans.get(planKey) ?? null;
+
   form.send.disabled = true;
   try {
     const results = [];
@@ -189,7 +222,9 @@ async function send(event) {
     }
     const last = results[results.length - 1];
     showMetrics(results);
-    showPlan(last.body?.plan);
+    const plan = last.body?.plan;
+    showPlan(plan, { plan: previousPlan, path: rawPath });
+    if (plan) lastPlans.set(planKey, plan);
     showResponse(last);
   } catch (error) {
     $("response").textContent = `Network error: ${error.message}\nIs the backend running on the port Vite forwards to?`;
@@ -226,25 +261,10 @@ function summarize(values) {
   return `avg ${fmtMs(avg)} (min ${Math.round(Math.min(...values))}, max ${Math.round(Math.max(...values))})`;
 }
 
-function showPlan(plan) {
+function showPlan(plan, context) {
   const box = $("plan");
-  if (!plan) {
-    box.hidden = true;
-    return;
-  }
-  box.hidden = false;
-  const stageClass = plan.stage === "COLLSCAN" ? "bad" : "good";
-  box.innerHTML = `
-    <h2>Query plan</h2>
-    <div class="plan-grid">
-      <div><span class="label">Stage</span><span class="value ${stageClass}">${escape(plan.stage)}</span></div>
-      <div><span class="label">Index</span><span class="value">${escape(plan.indexName ?? "none")}</span></div>
-      <div><span class="label">Docs examined</span><span class="value">${plan.docsExamined}</span></div>
-      <div><span class="label">Keys examined</span><span class="value">${plan.keysExamined}</span></div>
-      <div><span class="label">Returned</span><span class="value">${plan.nReturned}</span></div>
-      <div><span class="label">Sort in memory</span><span class="value ${plan.hasSortStage ? "warn" : "good"}">${plan.hasSortStage ? "yes" : "no"}</span></div>
-    </div>
-    <p class="note">Stages: ${escape((plan.stages ?? []).join(" → "))}</p>`;
+  box.hidden = !plan;
+  if (plan) box.innerHTML = renderPlan(plan, context);
 }
 
 function showResponse(result) {
@@ -269,7 +289,7 @@ function renderHistory() {
         row.status,
         fmtMs(row.roundTripMs),
         fmtMs(row.serverMs),
-        p ? `<span class="${p.stage === "COLLSCAN" ? "bad" : "good"}">${escape(p.stage)}</span>` : "",
+        p ? `<span class="${stageClass(p.stage)}">${escape(p.stage)}</span>` : "",
         p ? escape(p.indexName ?? "none") : "",
         p?.docsExamined ?? "",
         p?.keysExamined ?? "",
@@ -279,10 +299,6 @@ function renderHistory() {
       return `<tr>${cells.map((c) => `<td>${c}</td>`).join("")}</tr>`;
     })
     .join("");
-}
-
-function escape(value) {
-  return String(value).replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
 }
 
 // ---------- wire up ----------
@@ -295,6 +311,7 @@ $("clear-history").addEventListener("click", () => {
 });
 $("request-form").addEventListener("submit", send);
 form.body.addEventListener("input", fitBodyToContent);
+form.search.addEventListener("input", applySearch);
 setInterval(renderTokenStatus, 30_000);
 
 renderTokenStatus();

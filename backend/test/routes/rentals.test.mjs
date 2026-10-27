@@ -136,4 +136,16 @@ describe('rentals: a person rents a movie, served by an employee', () => {
         expect((await api.get('/api/rentals?customer_email=ravi@example.com')).body.total_docs).toBe(2)
         expect((await api.get(`/api/rentals?employee_id=${employee._id}`)).body.total_docs).toBe(2)
     })
+
+    it('list searches by the start of the snapshot movie title and explains the page query', async () => {
+        const movie = await createMovie(3)
+        const employee = await createEmployee()
+        await rent(movie._id, employee._id)
+        await rent(movie._id, employee._id)
+        const res = await api.get('/api/rentals?movie_title=Space%20Ad&explain=true')
+        expect(res.body.total_docs).toBe(2)
+        expect(res.body.plan).toMatchObject({ stage: 'COLLSCAN', docsExamined: 2, nReturned: 2 })
+        expect((await api.get('/api/rentals?movie_title=space')).body.total_docs).toBe(0)
+        expect((await api.get('/api/rentals')).body.plan).toBeUndefined()
+    })
 })

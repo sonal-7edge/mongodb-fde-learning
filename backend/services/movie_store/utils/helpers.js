@@ -3,6 +3,11 @@
  */
 const { faker } = require('@faker-js/faker')
 
+/**
+ * @import : Common Helpers
+ */
+const { prefixMatch } = require('../shared/search')
+
 const GENRES = ['drama', 'comedy', 'action', 'thriller', 'romance', 'horror', 'sci-fi', 'animation', 'crime', 'family', 'documentary', 'fantasy']
 const LANGUAGES = ['en', 'hi', 'fr', 'es', 'ja', 'ko', 'de', 'it']
 const COUNTRIES = ['US', 'IN', 'GB', 'FR', 'ES', 'JP', 'KR', 'DE', 'IT', 'CA']
@@ -11,11 +16,13 @@ const AGE_RATINGS = ['G', 'PG', 'PG-13', 'R']
 /**
  * Builds a MongoDB filter from validated query/filter fields. Soft-deleted movies are always excluded.
  *
- * @param {{genre?: string, kind?: string, year_from?: number, year_to?: number, min_rating?: number, in_stock?: boolean}} fields
+ * @param {{title?: string, genre?: string, kind?: string, year_from?: number, year_to?: number, min_rating?: number, in_stock?: boolean}} fields
  * @returns {object}
  */
 function buildMovieFilter(fields = {}) {
     const filter = { deleted: false }
+    // Title prefix: uses the { title: 1 } index when it exists (POST /api/movies/admin/indexes/title)
+    if (fields.title) filter.title = prefixMatch(fields.title)
     // genres is an array: { genres: 'drama' } matches any movie whose array CONTAINS 'drama'
     if (fields.genre) filter.genres = fields.genre
     if (fields.kind) filter.kind = fields.kind
