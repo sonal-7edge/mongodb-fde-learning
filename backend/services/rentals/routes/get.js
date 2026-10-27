@@ -1,4 +1,9 @@
 /**
+ * @import : External Dependencies
+ */
+const mongoose = require('mongoose')
+
+/**
  * @import : Entities
  */
 const Rental = require('../entities/Rental')
@@ -19,7 +24,8 @@ const { runWithOptionalExplain } = require('../shared/explain')
  */
 module.exports.getRental = async (req, res, next) => {
     try {
-        const query = Rental.findOne({ _id: req.valid.params.id, deleted: false }).lean()
+        const _id = new mongoose.Types.ObjectId(decodeURIComponent(req.valid.params.id))
+        const query = Rental.findOne({ _id, deleted: false }).lean()
         const { data, plan } = await runWithOptionalExplain(query, req.valid.query.explain)
         if (!data) throw new HttpError(404, 'Rental not found')
         return res.status(200).json({ data, plan })

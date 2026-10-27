@@ -1,4 +1,9 @@
 /**
+ * @import : External Dependencies
+ */
+const mongoose = require('mongoose')
+
+/**
  * @import : Entities
  */
 const Employee = require('../entities/Employee')
@@ -18,8 +23,9 @@ const { toSetPaths } = require('../shared/update')
  */
 module.exports.updateEmployee = async (req, res, next) => {
     try {
+        const _id = new mongoose.Types.ObjectId(decodeURIComponent(req.valid.params.id))
         const employee = await Employee.findOneAndUpdate(
-            { _id: req.valid.params.id, deleted: false },
+            { _id, deleted: false },
             { $set: { ...toSetPaths(req.valid.body), updated_by: req.auth.sub } },
             // returnDocument 'after' = send back the updated version; runValidators = check schema rules
             { returnDocument: 'after', runValidators: true, lean: true },

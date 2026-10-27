@@ -1,4 +1,9 @@
 /**
+ * @import : External Dependencies
+ */
+const mongoose = require('mongoose')
+
+/**
  * @import : Entities
  */
 const Movie = require('../entities/Movie')
@@ -18,19 +23,19 @@ const { HttpError } = require('../shared/errors')
  */
 module.exports.adjustStock = async (req, res, next) => {
     try {
-        const { id } = req.valid.params
+        const _id = new mongoose.Types.ObjectId(decodeURIComponent(req.valid.params.id))
         const take = req.valid.body.action === 'take'
 
         const filter = take
-            ? { _id: id, deleted: false, 'inventory.available': { $gt: 0 } }
+            ? { _id, deleted: false, 'inventory.available': { $gt: 0 } }
             // $expr compares two fields of the same document: available must stay <= total
-            : { _id: id, deleted: false, $expr: { $lt: ['$inventory.available', '$inventory.total'] } }
+            : { _id, deleted: false, $expr: { $lt: ['$inventory.available', '$inventory.total'] } }
         const update = { $inc: { 'inventory.available': take ? -1 : 1 }, $set: { updated_by: req.auth.sub } }
 
         const movie = await Movie.findOneAndUpdate(filter, update, { returnDocument: 'after', lean: true })
         if (!movie) {
             // Nothing matched: either the movie doesn't exist, or the stock rule refused the change
-            const exists = await Movie.exists({ _id: id, deleted: false })
+            const exists = await Movie.exists({ _id, deleted: false })
             if (!exists) throw new HttpError(404, 'Movie not found')
             throw new HttpError(409, take ? 'Out of stock' : 'All copies are already in stock')
         }

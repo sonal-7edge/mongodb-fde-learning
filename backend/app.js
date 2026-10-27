@@ -50,6 +50,10 @@ const { updateMovies } = require('./services/movie_store/routes/updateMany.js')
 const { adjustStock } = require('./services/movie_store/routes/findOneAndUpdate.js')
 const { deleteMovie } = require('./services/movie_store/routes/softDelete.js')
 const { purgeMovies } = require('./services/movie_store/routes/deleteMany.js')
+const { findMoviesByTitle } = require('./services/movie_store/routes/findByTitle.js')
+const { listIndexes } = require('./services/movie_store/routes/listIndexes.js')
+const { createIndex } = require('./services/movie_store/routes/createIndex.js')
+const { dropIndex } = require('./services/movie_store/routes/dropIndex.js')
 
 /**
  * @import : Route handlers | Rentals (rent and return each run inside one transaction)
@@ -97,9 +101,13 @@ function buildApp(options = {}) {
     // ORDER MATTERS: Express tries routes top to bottom, so fixed paths ('/count', '/genres')
     // come before '/:id', otherwise '/count' would be read as an id.
     app.post('/api/movies/admin/seed', auth, validate({ body: movieSchema.seedMoviesBody }), seedMovies)            // insertMany (batched)
+    app.get('/api/movies/admin/indexes', auth, listIndexes)                                                        // listIndexes
+    app.post('/api/movies/admin/indexes/:name', auth, validate({ params: movieSchema.indexNameParams }), createIndex)  // createIndex
+    app.delete('/api/movies/admin/indexes/:name', auth, validate({ params: movieSchema.indexNameParams }), dropIndex)  // dropIndex
     app.post('/api/movies', auth, validate({ body: movieSchema.createMovieBody }), createMovie)                    // insertOne
     app.post('/api/movies/bulk', auth, validate({ body: movieSchema.insertMoviesBody }), insertMovies)             // insertMany
     app.get('/api/movies', auth, validate({ query: movieSchema.findMoviesQuery }), findMovies)                    // find
+    app.get('/api/movies/by-title', auth, validate({ query: movieSchema.findMoviesByTitleQuery }), findMoviesByTitle)   // find (title prefix)
     app.get('/api/movies/count', auth, validate({ query: movieSchema.countMoviesQuery }), countMovies)             // countDocuments
     app.get('/api/movies/genres', auth, distinctGenres)                                                          // distinct
     app.patch('/api/movies', auth, validate({ body: movieSchema.updateMoviesBody }), updateMovies)                // updateMany

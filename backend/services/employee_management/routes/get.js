@@ -1,4 +1,9 @@
 /**
+ * @import : External Dependencies
+ */
+const mongoose = require('mongoose')
+
+/**
  * @import : Entities
  */
 const Employee = require('../entities/Employee')
@@ -18,7 +23,8 @@ const { runWithOptionalExplain } = require('../shared/explain')
  */
 module.exports.getEmployee = async (req, res, next) => {
     try {
-        const query = Employee.findOne({ _id: req.valid.params.id, deleted: false }).lean()
+        const _id = new mongoose.Types.ObjectId(decodeURIComponent(req.valid.params.id))
+        const query = Employee.findOne({ _id, deleted: false }).lean()
         const { data, plan } = await runWithOptionalExplain(query, req.valid.query.explain)
         if (!data) throw new HttpError(404, 'Employee not found')
         return res.status(200).json({ data, plan })
